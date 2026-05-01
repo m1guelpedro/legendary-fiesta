@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import pool from './db/connection.js';
+import authRoutes from './routes/authRoutes.js';
+import expenseRoutes from './routes/expenseRoutes.js';
+import simulationRoutes from './routes/simulationRoutes.js';
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -12,6 +15,13 @@ const PORT = process.env.PORT || 3000;
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+// Rotas de autenticação
+app.use('/api/auth', authRoutes);
+
+// Rotas de despesas e simulações
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/simulations', simulationRoutes);
 
 // Rotas básicas
 app.get('/', (req, res) => {
@@ -25,6 +35,41 @@ app.get('/db-test', async (req, res) => {
     res.json({ message: 'Conexão com DB OK', time: result.rows[0] });
   } catch (err) {
     res.status(500).json({ error: 'Erro na conexão com DB', details: err.message });
+  }
+});
+
+// Rota para inserir dados de exemplo
+app.post('/seed-data', async (req, res) => {
+  try {
+    // Inserir usuário de exemplo
+    const userResult = await pool.query(
+      'INSERT INTO usuario (nome, email, senha) VALUES ($1, $2, $3) RETURNING id',
+      ['Ana Silva', 'ana@example.com', 'hashed_password_123']
+    );
+    const userId = userResult.rows[0].id;
+
+    // Inserir despesas de exemplo
+    await pool.query(
+      'INSERT INTO despesas (usuario_id, descricao, valor, tipo, recorrencia, data_inicio) VALUES ($1, $2, $3, $4, $5, $6)',
+      [userId, 'Aluguel', 1500.00, 'fixo', 'mensal', '2026-05-01']
+    );
+
+    await pool.query(
+      'INSERT INTO despesas (usuario_id, descricao, valor, tipo, recorrencia, data_inicio) VALUES ($1, $2, $3, $4, $5, $6)',
+      [userId, 'Mercado', 250.00, 'variavel', 'semanal', '2026-05-01']
+    );
+
+    await pool.query(
+      'INSERT INTO despesas (usuario_id, descricao, valor, tipo, recorrencia, data_inicio) VALUES ($1, $2, $3, $4, $5, $6)',
+      [userId, 'Internet', 89.90, 'fixo', 'mensal', '2026-05-01']
+    );
+
+    res.json({ 
+      message: 'Dados inseridos com sucesso!', 
+      userId: userId 
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao inserir dados', details: err.message });
   }
 });
 
