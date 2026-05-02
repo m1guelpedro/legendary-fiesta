@@ -1,5 +1,5 @@
 #root {
-  max-width: 1280px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -10,4 +10,105 @@
   line-height: 1.5;
   font-weight: 400;
   color: #213547;
+}
+
+.card {
+  border: 1px solid #d8e2ef;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem auto;
+  max-width: 720px;
+  background: #fafbff;
+  box-shadow: 0 8px 20px rgba(33, 53, 71, 0.08);
+}
+
+.buttons-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  background: #2f7bff;
+  color: white;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+  background: #235ecc;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+}
+
+input {
+  width: 80px;
+  padding: 0.5rem 0.6rem;
+  margin-top: 0.5rem;
+  border: 1px solid #c3cee8;
+  border-radius: 8px;
+}
+
+.output {
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 1rem auto;
+  padding: 1rem;
+  max-width: 900px;
+  background: #f4f7ff;
+  border-radius: 10px;
+  border: 1px solid #e2e8f6;
+}
+
+.error {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.info {
+  color: #2f7bff;
+  font-weight: 600;
+}
+
+.footer {
+  margin-top: 1.5rem;
+  color: #5f6e83;
+}
+.form-section {
+  text-align: left;
+}
+
+.grid-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.form-section h2 {
+  margin-top: 0;
+}
+
+.form-section label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.card button {
+  width: auto;
 }

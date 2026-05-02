@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import pool from './db/connection.js';
 import authRoutes from './routes/authRoutes.js';
 import expenseRoutes from './routes/expenseRoutes.js';
+import incomeRoutes from './routes/incomeRoutes.js';
+import debtRoutes from './routes/debtRoutes.js';
 import simulationRoutes from './routes/simulationRoutes.js';
 
 // Carregar variáveis de ambiente
@@ -21,6 +23,8 @@ app.use('/api/auth', authRoutes);
 
 // Rotas de despesas e simulações
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/incomes', incomeRoutes);
+app.use('/api/debts', debtRoutes);
 app.use('/api/simulations', simulationRoutes);
 
 // Rotas básicas
@@ -62,6 +66,18 @@ app.post('/seed-data', async (req, res) => {
     await pool.query(
       'INSERT INTO despesas (usuario_id, descricao, valor, tipo, recorrencia, data_inicio) VALUES ($1, $2, $3, $4, $5, $6)',
       [userId, 'Internet', 89.90, 'fixo', 'mensal', '2026-05-01']
+    );
+
+    // Inserir rendas de exemplo
+    await pool.query(
+      'INSERT INTO ganhos (usuario_id, descricao, valor, recorrencia, data_inicio) VALUES ($1, $2, $3, $4, $5)',
+      [userId, 'Salário', 3000.00, 'mensal', '2026-05-01']
+    );
+
+    // Inserir dívidas de exemplo
+    await pool.query(
+      'INSERT INTO dividas (usuario_id, descricao, valor, recorrencia, data_inicio) VALUES ($1, $2, $3, $4, $5)',
+      [userId, 'Empréstimo', 500.00, 'mensal', '2026-05-01']
     );
 
     res.json({ 
