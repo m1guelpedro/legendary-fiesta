@@ -1,8 +1,8 @@
 import pool from '../db/connection.js';
-import { calcularDespesasPorPeriodo, gerarSimulacoes } from '../utils/calculoSimulacao.js';
+import { calcularSaldoPorPeriodo, gerarSimulacoesBalance } from '../utils/calculoSimulacao.js';
 
-// Simular despesas para períodos específicos
-export const simularDespesas = async (req, res) => {
+// Simular saldo para períodos específicos
+export const simularSaldo = async (req, res) => {
   try {
     const { usuario_id, data_base } = req.body;
 
@@ -11,16 +11,29 @@ export const simularDespesas = async (req, res) => {
     }
 
     // Buscar despesas do usuário
-    const result = await pool.query(
+    const despesasResult = await pool.query(
       'SELECT * FROM despesas WHERE usuario_id = $1',
       [usuario_id]
     );
+    const despesas = despesasResult.rows;
 
-    const despesas = result.rows;
+    // Buscar rendas do usuário
+    const rendasResult = await pool.query(
+      'SELECT * FROM ganhos WHERE usuario_id = $1',
+      [usuario_id]
+    );
+    const rendas = rendasResult.rows;
+
+    // Buscar dívidas do usuário
+    const dividasResult = await pool.query(
+      'SELECT * FROM dividas WHERE usuario_id = $1',
+      [usuario_id]
+    );
+    const dividas = dividasResult.rows;
 
     // Gerar simulações
     const dataRef = data_base || new Date().toISOString().split('T')[0];
-    const simulacoes = gerarSimulacoes(despesas, dataRef);
+    const simulacoes = gerarSimulacoesBalance(rendas, despesas, dividas, dataRef);
 
     // Salvar simulação no banco (opcional)
     const dataInicio = dataRef;
@@ -38,12 +51,12 @@ export const simularDespesas = async (req, res) => {
       simulacoes,
     });
   } catch (err) {
-    res.status(500).json({ error: 'Erro ao simular despesas', details: err.message });
+    res.status(500).json({ error: 'Erro ao simular saldo', details: err.message });
   }
 };
 
-// Calcular despesas para um período específico
-export const calcularPorPeriodo = async (req, res) => {
+// Calcular saldo para um período específico
+export const calcularSaldoPeriodoController = async (req, res) => {
   try {
     const { usuario_id, data_inicio, data_fim } = req.body;
 
@@ -54,15 +67,28 @@ export const calcularPorPeriodo = async (req, res) => {
     }
 
     // Buscar despesas do usuário
-    const result = await pool.query(
+    const despesasResult = await pool.query(
       'SELECT * FROM despesas WHERE usuario_id = $1',
       [usuario_id]
     );
+    const despesas = despesasResult.rows;
 
-    const despesas = result.rows;
+    // Buscar rendas do usuário
+    const rendasResult = await pool.query(
+      'SELECT * FROM ganhos WHERE usuario_id = $1',
+      [usuario_id]
+    );
+    const rendas = rendasResult.rows;
 
-    // Calcular despesas do período
-    const calculo = calcularDespesasPorPeriodo(despesas, data_inicio, data_fim);
+    // Buscar dívidas do usuário
+    const dividasResult = await pool.query(
+      'SELECT * FROM dividas WHERE usuario_id = $1',
+      [usuario_id]
+    );
+    const dividas = dividasResult.rows;
+
+    // Calcular saldo do período
+    const calculo = calcularSaldoPorPeriodo(rendas, despesas, dividas, data_inicio, data_fim);
 
     res.json({
       message: 'Cálculo realizado com sucesso',
