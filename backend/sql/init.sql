@@ -1,0 +1,57 @@
+CREATE TABLE IF NOT EXISTS usuario (
+  id SERIAL PRIMARY KEY,
+  nome VARCHAR(120) NOT NULL,
+  email VARCHAR(160) NOT NULL UNIQUE,
+  senha TEXT NOT NULL,
+  criado_em TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS usuario_token (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
+  token TEXT NOT NULL,
+  data_criacao TIMESTAMP DEFAULT NOW(),
+  data_expiracao TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS despesas (
+  id SERIAL PRIMARY KEY,
+  usuario_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
+  descricao VARCHAR(180) NOT NULL,
+  valor NUMERIC(12, 2) NOT NULL,
+  tipo VARCHAR(20) NOT NULL,
+  recorrencia VARCHAR(20) NOT NULL,
+  data_inicio DATE NOT NULL,
+  data_fim DATE,
+  criado_em TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS ganhos (
+  id SERIAL PRIMARY KEY,
+  usuario_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
+  descricao VARCHAR(180) NOT NULL,
+  valor NUMERIC(12, 2) NOT NULL,
+  recorrencia VARCHAR(20) NOT NULL,
+  data_inicio DATE NOT NULL,
+  data_fim DATE,
+  criado_em TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS dividas (
+  id SERIAL PRIMARY KEY,
+  usuario_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
+  descricao VARCHAR(180) NOT NULL,
+  valor NUMERIC(12, 2) NOT NULL,
+  recorrencia VARCHAR(20) NOT NULL,
+  data_inicio DATE NOT NULL,
+  data_fim DATE,
+  criado_em TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS simulacoes (
+  id SERIAL PRIMARY KEY,
+  usuario_id INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
+  data_inicio DATE NOT NULL,
+  data_fim DATE NOT NULL,
+  criado_em TIMESTAMP DEFAULT NOW()
+);
