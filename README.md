@@ -115,9 +115,10 @@ legendary-fiesta/
 └── README.md
 ```
 
-## Contribuição
+## Tutorial para fazer commit:
 
-1. Faça um fork.
-2. Crie uma branch para sua feature.
-3. Commit suas mudanças.
-4. Push e abra um PR.
+- Antes de fazer qualquer mudança cheque a sua branch: `git branch`;
+- Se não estiver na sua branch faça o seguinte comando: `git checkout seu_nome_sua_branch` OU se você não criou a sua branch ainda `git checkout -b seu_nome_sua_branch`;
+- E adicionar as suas mudanças e ir fazendo os seguintes comandos:
+- - git add .;
+- - git commit -m "sua mensagem";
