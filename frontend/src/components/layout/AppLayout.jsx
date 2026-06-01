@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { BarChart3, GitCompare, History, LayoutDashboard, LogOut, Menu, ReceiptText, WalletCards, X } from 'lucide-react';
+import { BarChart3, GitCompare, History, LayoutDashboard, LogOut, Menu, ReceiptText, WalletCards, X, Activity } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/lancamentos', label: 'Lancamentos', icon: ReceiptText },
   { to: '/simulacoes', label: 'Simulacoes', icon: BarChart3 },
   { to: '/historico', label: 'Historico', icon: History },
+  { to: '/atividades', label: 'Atividades', icon: Activity },
   { to: '/comparacao', label: 'Comparacao', icon: GitCompare },
 ];
 

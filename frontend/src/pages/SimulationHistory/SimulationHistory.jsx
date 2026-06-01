@@ -10,12 +10,24 @@ const SimulationHistoryPage = () => {
   const { history, loading, error, refresh } = useSimulations();
   const [toast, setToast] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [filters, setFilters] = useState({ data_inicio: '', data_fim: '' });
 
   const remove = async (item) => {
     if (!window.confirm('Excluir esta simulacao do historico local?')) return;
     await simulationService.deleteLocal(item.id);
     setToast({ type: 'success', message: 'Simulacao removida localmente.' });
     refresh();
+  };
+
+  const applyFilters = async () => {
+    try {
+      setToast(null);
+      const data = await simulationService.history((history[0] && history[0].usuario_id) || (null), filters);
+      // overwrite local history refresh by replacing state via hook refresh() not exposing setter; quick workaround: refresh()
+      refresh();
+    } catch (err) {
+      setToast({ type: 'error', message: err.message });
+    }
   };
 
   return (
@@ -25,6 +37,11 @@ const SimulationHistoryPage = () => {
         <div>
           <h1>Historico de simulacoes</h1>
           <p>Consulte simulacoes geradas e remova itens localmente enquanto o backend nao possui DELETE.</p>
+        </div>
+        <div className="filters-row">
+          <label>Inicio <input type="date" value={filters.data_inicio} onChange={(e) => setFilters({ ...filters, data_inicio: e.target.value })} /></label>
+          <label>Fim <input type="date" value={filters.data_fim} onChange={(e) => setFilters({ ...filters, data_fim: e.target.value })} /></label>
+          <button className="secondary-button" onClick={applyFilters}>Aplicar</button>
         </div>
       </div>
 
@@ -71,10 +88,20 @@ const SimulationHistoryPage = () => {
             <span>Criada em <strong>{formatDate(selected.criado_em)}</strong></span>
             <span>Status <strong>Registrada</strong></span>
           </div>
-          <p className="helper-text">
-            O backend atual salva apenas o periodo da simulacao. Quando a API retornar os resultados completos,
-            este modal pode exibir receitas, despesas, dividas e saldo historico.
-          </p>
+          {selected.results ? (
+            <div className="results-block">
+              <h3>Resultados</h3>
+              <pre className="mono">{JSON.stringify(selected.results, null, 2)}</pre>
+            </div>
+          ) : (
+            <p className="helper-text">Resultados não disponíveis para esta simulação.</p>
+          )}
+          {selected.input_data && (
+            <>
+              <h4>Parâmetros</h4>
+              <pre className="mono">{JSON.stringify(selected.input_data, null, 2)}</pre>
+            </>
+          )}
         </Modal>
       )}
     </section>

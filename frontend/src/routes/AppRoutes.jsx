@@ -7,6 +7,7 @@ import Dashboard from '../pages/Dashboard/Dashboard.jsx';
 import Transactions from '../pages/Transactions/Transactions.jsx';
 import Simulations from '../pages/Simulations/Simulations.jsx';
 import SimulationHistory from '../pages/SimulationHistory/SimulationHistory.jsx';
+import HistoricoAtividades from '../pages/HistoricoAtividades/HistoricoAtividades.jsx';
 import PeriodComparison from '../pages/PeriodComparison/PeriodComparison.jsx';
 
 const AppRoutes = () => (
@@ -20,6 +21,7 @@ const AppRoutes = () => (
         <Route path="/lancamentos" element={<Transactions />} />
         <Route path="/simulacoes" element={<Simulations />} />
         <Route path="/historico" element={<SimulationHistory />} />
+        <Route path="/atividades" element={<HistoricoAtividades />} />
         <Route path="/comparacao" element={<PeriodComparison />} />
       </Route>
     </Route>

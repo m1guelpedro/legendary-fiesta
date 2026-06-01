@@ -1,5 +1,6 @@
 import pool from '../db/connection.js';
 import { calcularSaldoPorPeriodo, gerarSimulacoesBalance } from '../utils/calculoSimulacao.js';
+import { registrarHistorico } from '../utils/auditLog.js';
 
 // Simular saldo para períodos específicos
 export const simularSaldo = async (req, res) => {
@@ -35,15 +36,33 @@ export const simularSaldo = async (req, res) => {
     const dataRef = data_base || new Date().toISOString().split('T')[0];
     const simulacoes = gerarSimulacoesBalance(rendas, despesas, dividas, dataRef);
 
-    // Salvar simulação no banco (opcional)
+    // Salvar simulação no banco com dados completos
     const dataInicio = dataRef;
     const dataFim1Ano = new Date(dataRef);
     dataFim1Ano.setFullYear(dataFim1Ano.getFullYear() + 1);
 
+    const inputData = { usuario_id, data_base: data_base || null };
+    const results = { simulacoes };
+    const params = { renda_count: rendas.length, despesa_count: despesas.length, divida_count: dividas.length };
+
     await pool.query(
-      'INSERT INTO simulacoes (usuario_id, data_inicio, data_fim, criado_em) VALUES ($1, $2, $3, NOW())',
-      [usuario_id, dataInicio, dataFim1Ano.toISOString().split('T')[0]]
+      'INSERT INTO simulacoes (usuario_id, data_inicio, data_fim, input_data, results, params, criado_em) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
+      [usuario_id, dataInicio, dataFim1Ano.toISOString().split('T')[0], JSON.stringify(inputData), JSON.stringify(results), JSON.stringify(params)]
     );
+
+    // Registrar no histórico
+    await registrarHistorico({
+      usuarioId: usuario_id,
+      categoria: 'SIMULACAO',
+      tipoEvento: 'EXECUTADO',
+      descricao: `Simulação de 12 meses executada`,
+      metadata: {
+        data_referencia: dataRef,
+        receitas: rendas.length,
+        despesas: despesas.length,
+        dividas: dividas.length,
+      },
+    });
 
     res.json({
       message: 'Simulações geradas com sucesso',
@@ -145,15 +164,42 @@ export const compararPeriodos = async (req, res) => {
 // Histórico de simulações
 export const getHistoricoSimulacoes = async (req, res) => {
   try {
-    const { usuario_id } = req.params;
+    // Compatível: aceitar /historico/:usuario_id ou /historico?usuario_id=...
+    const usuario_id = req.params.usuario_id || req.query.usuario_id;
+    if (!usuario_id) return res.status(400).json({ error: 'usuario_id é obrigatório' });
+
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Number(req.query.limit) || 20);
+    const offset = (page - 1) * limit;
+
+    // Filtros adicionais (datas)
+    const filters = [];
+    const values = [usuario_id];
+    let idx = 2;
+
+    if (req.query.data_inicio) {
+      filters.push(`data_inicio >= $${idx}`);
+      values.push(req.query.data_inicio);
+      idx += 1;
+    }
+
+    if (req.query.data_fim) {
+      filters.push(`data_fim <= $${idx}`);
+      values.push(req.query.data_fim);
+      idx += 1;
+    }
+
+    const where = `WHERE usuario_id = $1${filters.length ? ' AND ' + filters.join(' AND ') : ''}`;
 
     const result = await pool.query(
-      'SELECT * FROM simulacoes WHERE usuario_id = $1 ORDER BY criado_em DESC',
-      [usuario_id]
+      `SELECT * FROM simulacoes ${where} ORDER BY criado_em DESC LIMIT $${idx} OFFSET $${idx + 1}`,
+      [...values, limit, offset]
     );
 
     res.json({
       simulacoes: result.rows,
+      page,
+      limit,
     });
   } catch (err) {
     res.status(500).json({ error: 'Erro ao buscar histórico', details: err.message });

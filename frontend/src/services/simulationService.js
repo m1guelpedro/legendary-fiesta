@@ -15,8 +15,17 @@ export const simulationService = {
     body: JSON.stringify(payload),
   }),
 
-  async history(userId) {
-    const data = await api(`/api/simulations/historico/${userId}`);
+  async history(userId, filters = {}) {
+    // filters: { page, limit, data_inicio, data_fim }
+    const params = new URLSearchParams();
+    if (userId) params.set('usuario_id', userId);
+    if (filters.page) params.set('page', String(filters.page));
+    if (filters.limit) params.set('limit', String(filters.limit));
+    if (filters.data_inicio) params.set('data_inicio', filters.data_inicio);
+    if (filters.data_fim) params.set('data_fim', filters.data_fim);
+
+    const url = `/api/simulations/historico?${params.toString()}`;
+    const data = await api(url);
     const deletedIds = getDeletedIds();
     return (data.simulacoes || []).filter((item) => !deletedIds.includes(item.id));
   },
