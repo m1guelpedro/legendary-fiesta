@@ -7,6 +7,7 @@ import expenseRoutes from './routes/expenseRoutes.js';
 import incomeRoutes from './routes/incomeRoutes.js';
 import debtRoutes from './routes/debtRoutes.js';
 import simulationRoutes from './routes/simulationRoutes.js';
+import historyRoutes from './routes/historyRoutes.js';
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -26,6 +27,9 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/incomes', incomeRoutes);
 app.use('/api/debts', debtRoutes);
 app.use('/api/simulations', simulationRoutes);
+
+// Rotas de histórico
+app.use('/api/historico', historyRoutes);
 
 // Rotas básicas
 app.get('/', (req, res) => {

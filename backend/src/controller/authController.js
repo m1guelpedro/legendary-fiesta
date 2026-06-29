@@ -1,16 +1,22 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import pool from '../db/connection.js';
+import { registrarHistorico } from '../utils/auditLog.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret_key_123';
 
 export const registrar = async (req, res) => {
   try {
-    const { nome, email, senha } = req.body;
+    const { nome, email, senha, confirmarSenha } = req.body;
 
     // Validação básica
     if (!nome || !email || !senha) {
       return res.status(400).json({ error: 'Nome, email e senha são obrigatórios' });
+    }
+
+    // Se o campo confirmarSenha for enviado, validar igualdade (não será salvo)
+    if (confirmarSenha && senha !== confirmarSenha) {
+      return res.status(400).json({ error: 'As senhas informadas não coincidem' });
     }
 
     // Verificar se email já existe
@@ -40,6 +46,17 @@ export const registrar = async (req, res) => {
       JWT_SECRET,
       { expiresIn: '7d' }
     );
+
+    // Registrar no histórico
+    await registrarHistorico({
+      usuarioId: usuario.id,
+      categoria: 'AUTH',
+      tipoEvento: 'CRIADO',
+      descricao: `Usuário criado: ${usuario.nome}`,
+      entidade: 'usuario',
+      entidadeId: usuario.id,
+      dadosNovos: { id: usuario.id, nome: usuario.nome, email: usuario.email },
+    });
 
     res.status(201).json({
       message: 'Usuário registrado com sucesso!',
@@ -96,6 +113,15 @@ export const login = async (req, res) => {
       [usuario.id, token]
     );
 
+    // Registrar no histórico
+    await registrarHistorico({
+      usuarioId: usuario.id,
+      categoria: 'AUTH',
+      tipoEvento: 'LOGIN',
+      descricao: 'Login realizado com sucesso',
+      metadata: { email: usuario.email },
+    });
+
     res.json({
       message: 'Login realizado com sucesso!',
       usuario: {
@@ -142,6 +168,14 @@ export const logout = async (req, res) => {
       'DELETE FROM usuario_token WHERE user_id = $1 AND token = $2',
       [userId, token]
     );
+
+    // Registrar no histórico
+    await registrarHistorico({
+      usuarioId: userId,
+      categoria: 'AUTH',
+      tipoEvento: 'LOGOUT',
+      descricao: 'Logout realizado',
+    });
 
     res.json({ message: 'Logout realizado com sucesso!' });
   } catch (err) {
