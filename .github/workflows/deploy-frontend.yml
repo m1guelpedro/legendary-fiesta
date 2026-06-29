@@ -36,7 +36,7 @@ jobs:
 
       - name: Build app
         env:
-          VITE_API_BASE: ${{ vars.VITE_API_BASE || 'https://legendary-fiesta-2cfb.onrender.com' }}
+          VITE_API_BASE: ${{ vars.VITE_API_BASE || 'https://legendary-fiesta-2cfb.onrender.com/' }}
         run: npm run build
 
       - name: Upload Pages artifact
